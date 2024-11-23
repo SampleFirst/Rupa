@@ -30,7 +30,7 @@ async def callback_query(client, callback_query):
         file_extension = data[2]
         await callback_query.message.edit(f"Enter new file name (without extension):\n\nCurrent File Name: {file_name}")
         await callback_query.answer()
-        await client.listen((link unavailable), timeout=300, on_result=on_rename_result(file_name, file_extension))
+        await client.listen((link_unavailable), timeout=300, on_result=on_rename_result(file_name, file_extension))
     elif data[0] == "cancel":
         await callback_query.message.edit("Cancelled!")
         await callback_query.answer()
