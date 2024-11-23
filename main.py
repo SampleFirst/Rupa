@@ -15,7 +15,7 @@ async def handle_song_request(client, message):
     song_info = get_song_info(song_name)
     if song_info:
         buttons = [
-            [InlineKeyboardButton("Download", callback_data=f"download:{song_info['song_id']}"))],
+            [InlineKeyboardButton("Download", callback_data=f"download:{song_info['song_id']}")],
             [InlineKeyboardButton("Cancel", callback_data="cancel")]
         ]
         await message.reply(f"Song Name: {song_info['song_name']}\nArtist: {song_info['artist']}\n\nWhat would you like to do?", reply_markup=InlineKeyboardMarkup(buttons))
