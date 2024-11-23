@@ -1,7 +1,10 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from config import API_ID, API_HASH, BOT_TOKEN
 from utils import get_file_name, get_file_extension
+
+API_ID = "10956858-"
+API_HASH = "cceefd3382b44d4d85be2d83201102b7"
+BOT_TOKEN = "7248794433:AAG9Eqcf7bjPeriE3d0utaINsVpaTqoHd1k"
 
 app = Client("rename_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
