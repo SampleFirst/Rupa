@@ -53,7 +53,7 @@ async def callback_query(client, callback_query):
         await callback_query.message.edit("Cancelled!")
         await callback_query.answer()
 
-@app.on_message(filters.text & ~filters.command)
+@app.on_message(filters.text & filters.command)
 async def handle_rename(client, message):
     user_id = message.from_user.id
     
