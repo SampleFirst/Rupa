@@ -1,3 +1,5 @@
 
 pyrogram
 pymongo
+requests
+beautifulsoup4
