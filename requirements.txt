@@ -1,5 +1,0 @@
-pyrogram
-TgCrypto
-youtube_dl
-yt-dlp
-FFmpeg
