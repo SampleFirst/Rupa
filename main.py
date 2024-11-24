@@ -27,7 +27,7 @@ async def callback_query(client, callback_query):
     data = callback_query.data.split(":")
     if data[0] == "download":
         song_id = data[1]
-        download_song(song_id, callback_query.message)
+        await download_song(song_id, callback_query.message)
         await callback_query.answer()
     elif data[0] == "cancel":
         await callback_query.message.edit("Cancelled!")
