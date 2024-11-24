@@ -37,9 +37,7 @@ async def search_song(_, message):
     songs = [f"🎵 {song['title']} by {song['artist']} - [Listen Here]({song['url']})" for song in results]
 
     if songs:
-        await message.reply_text("
-
-".join(songs), disable_web_page_preview=True)
+        await message.reply_text("".join(songs), disable_web_page_preview=True)
     else:
         await message.reply_text("No matching songs found. Try a different keyword.")
 
