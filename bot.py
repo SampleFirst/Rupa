@@ -1,12 +1,13 @@
 
+import requests
+from bs4 import BeautifulSoup
 from pyrogram import Client, filters
 from pymongo import MongoClient
 
-# Bot configuration
+# Bot and MongoDB configuration
 API_ID = "10956858"
 API_HASH = "cceefd3382b44d4d85be2d83201102b7"
 BOT_TOKEN = "7248794433:AAG9Eqcf7bjPeriE3d0utaINsVpaTqoHd1k"
-ADMINS = "5433924139"
 
 # MongoDB configuration
 MONGO_URI = "mongodb+srv://Rename:Rename@cluster0.m3eacgp.mongodb.net/?retryWrites=true&w=majority"
@@ -18,6 +19,36 @@ app = Client("LofiSongBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKE
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 songs_collection = db["songs"]
+
+# Function to scrape the lofi music site and find song details
+def scrape_song(query):
+    base_url = "https://lofimusic.app"  # Base URL of the website
+    search_url = f"{base_url}/?s={query}"  # Search query URL
+    response = requests.get(search_url)
+    
+    if response.status_code != 200:
+        return []
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Finding all song elements on the page (adjust the class name as per actual site)
+    song_elements = soup.find_all('a', class_="entry-title")  # Modify class as needed
+    songs = []
+
+    for song in song_elements:
+        title = song.get_text()
+        url = song['href']
+        
+        # Extracting artist if available (you may need to adjust the extraction logic)
+        artist = "Unknown Artist"
+        
+        songs.append({
+            "title": title,
+            "artist": artist,
+            "url": url
+        })
+    
+    return songs
 
 # Command to start the bot
 @app.on_message(filters.command("start"))
@@ -32,24 +63,14 @@ async def search_song(_, message):
         await message.reply_text("Please provide a keyword to search for songs. Example: /search calm")
         return
 
-    # Search in the MongoDB collection
-    results = songs_collection.find({"title": {"$regex": query, "$options": "i"}})
-    songs = [f"🎵 {song['title']} by {song['artist']} - [Listen Here]({song['url']})" for song in results]
-
+    # Scrape songs based on the query
+    songs = scrape_song(query)
+    
     if songs:
-        await message.reply_text("".join(songs), disable_web_page_preview=True)
+        song_texts = [f"🎵 {song['title']} by {song['artist']} - [Listen Here]({song['url']})" for song in songs]
+        await message.reply_text("".join(song_texts), disable_web_page_preview=True)
     else:
         await message.reply_text("No matching songs found. Try a different keyword.")
-
-# Admin command to add a song (optional feature)
-@app.on_message(filters.command("add") & filters.user(ADMINS))
-async def add_song(_, message):
-    try:
-        _, title, artist, url = message.text.split(",", 3)
-        songs_collection.insert_one({"title": title.strip(), "artist": artist.strip(), "url": url.strip()})
-        await message.reply_text(f"✅ Song '{title.strip()}' by {artist.strip()} added successfully!")
-    except ValueError:
-        await message.reply_text("Invalid format. Use: /add <title>, <artist>, <url>")
 
 # Run the bot
 if __name__ == "__main__":
