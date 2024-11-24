@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from pyrogram import Client, filters
 from pymongo import MongoClient
 
-# Bot and MongoDB configuration
+# Bot configuration
 API_ID = "10956858"
 API_HASH = "cceefd3382b44d4d85be2d83201102b7"
 BOT_TOKEN = "7248794433:AAG9Eqcf7bjPeriE3d0utaINsVpaTqoHd1k"
@@ -13,15 +13,14 @@ BOT_TOKEN = "7248794433:AAG9Eqcf7bjPeriE3d0utaINsVpaTqoHd1k"
 MONGO_URI = "mongodb+srv://Rename:Rename@cluster0.m3eacgp.mongodb.net/?retryWrites=true&w=majority"
 DB_NAME = "lofi_songs_db"
 
-
 # Initialize bot and MongoDB client
 app = Client("LofiSongBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 songs_collection = db["songs"]
 
-# Function to scrape the lofi music site and find song details
-def scrape_song(query):
+# Function to scrape songs from Lofi Music App
+def scrape_lofi_music_app(query):
     base_url = "https://lofimusic.app"  # Base URL of the website
     search_url = f"{base_url}/?s={query}"  # Search query URL
     response = requests.get(search_url)
@@ -31,15 +30,12 @@ def scrape_song(query):
 
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    # Finding all song elements on the page (adjust the class name as per actual site)
     song_elements = soup.find_all('a', class_="entry-title")  # Modify class as needed
     songs = []
 
     for song in song_elements:
         title = song.get_text()
         url = song['href']
-        
-        # Extracting artist if available (you may need to adjust the extraction logic)
         artist = "Unknown Artist"
         
         songs.append({
@@ -47,6 +43,75 @@ def scrape_song(query):
             "artist": artist,
             "url": url
         })
+    
+    return songs
+
+# Function to scrape songs from ChilledCow (Lofi Hip Hop Radio)
+def scrape_chilled_cow(query):
+    base_url = "https://chilledcow.com"  # Base URL of ChilledCow
+    search_url = f"{base_url}/?s={query}"  # Search query URL
+    response = requests.get(search_url)
+    
+    if response.status_code != 200:
+        return []
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    song_elements = soup.find_all('a', class_="post-title")  # Modify class as needed
+    songs = []
+
+    for song in song_elements:
+        title = song.get_text()
+        url = song['href']
+        artist = "Unknown Artist"
+        
+        songs.append({
+            "title": title,
+            "artist": artist,
+            "url": url
+        })
+    
+    return songs
+
+# Function to scrape songs from Lofi Girl
+def scrape_lofi_girl(query):
+    base_url = "https://lofigirl.com"  # Base URL of Lofi Girl
+    search_url = f"{base_url}/?s={query}"  # Search query URL
+    response = requests.get(search_url)
+    
+    if response.status_code != 200:
+        return []
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    song_elements = soup.find_all('a', class_="post-title")  # Modify class as needed
+    songs = []
+
+    for song in song_elements:
+        title = song.get_text()
+        url = song['href']
+        artist = "Unknown Artist"
+        
+        songs.append({
+            "title": title,
+            "artist": artist,
+            "url": url
+        })
+    
+    return songs
+
+# Function to search songs on multiple websites
+def search_songs(query):
+    songs = []
+    
+    # Scrape Lofi Music App
+    songs.extend(scrape_lofi_music_app(query))
+    
+    # Scrape ChilledCow
+    songs.extend(scrape_chilled_cow(query))
+    
+    # Scrape Lofi Girl
+    songs.extend(scrape_lofi_girl(query))
     
     return songs
 
@@ -63,12 +128,12 @@ async def search_song(_, message):
         await message.reply_text("Please provide a keyword to search for songs. Example: /search calm")
         return
 
-    # Scrape songs based on the query
-    songs = scrape_song(query)
+    # Search for songs on multiple websites
+    songs = search_songs(query)
     
     if songs:
         song_texts = [f"🎵 {song['title']} by {song['artist']} - [Listen Here]({song['url']})" for song in songs]
-        await message.reply_text("".join(song_texts), disable_web_page_preview=True)
+        await message.reply_text("\n\n".join(song_texts), disable_web_page_preview=True)
     else:
         await message.reply_text("No matching songs found. Try a different keyword.")
 
