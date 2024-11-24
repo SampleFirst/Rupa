@@ -1,3 +1,4 @@
 pyrogram
 TgCrypto
 youtube_dl
+FFmpeg
